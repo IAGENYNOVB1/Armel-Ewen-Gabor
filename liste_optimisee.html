@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="description" content="Application optimisée de gestion de liste de courses">
+    <meta name="theme-color" content="#667eea">
+    <title>Liste de courses - Optimisée</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #4CAF50;
+            --danger: #ff6b6b;
+            --text: #333;
+            --light: #f8f9fa;
+        }
+
+        body.dark-mode {
+            --primary: #7c8ff7;
+            --secondary: #9d6bb8;
+            --text: #e0e0e0;
+            --light: #2a2a3e;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text);
+            transition: background 0.3s ease;
+        }
+
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header h1 { font-size: 32px; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .btn-icon { width: 45px; height: 45px; border-radius: 50%; border: none; background: white; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .btn-icon:hover { transform: scale(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
+
+        main {
+            background: var(--light);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+            margin-bottom: 20px;
+            transition: background 0.3s ease;
+        }
+
+        .tabs { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid #e0e0e0; }
+        .tab-btn { padding: 10px 20px; background: none; border: none; cursor: pointer; color: #999; border-bottom: 3px solid transparent; transition: all 0.3s; }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .form-group { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+        .form-group input, .form-group select { padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; transition: border-color 0.3s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        .form-group input[type="text"] { flex: 1; min-width: 150px; }
+        .form-group input[type="number"] { width: 100px; }
+        .form-group select { width: 130px; }
+
+        button {
+            padding: 12px 25px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover { background: var(--secondary); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3); }
+        button.danger { background: var(--danger); }
+        button.danger:hover { background: #ee5a52; }
+
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        body.dark-mode .stat-card { background: #3a3a4e; }
+        .stat-number { font-size: 28px; font-weight: 700; color: var(--primary); margin-bottom: 5px; }
+        .stat-label { font-size: 14px; color: #999; }
+
+        .articles-container ul { list-style: none; }
+        .article-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--primary);
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        body.dark-mode .article-item { background: #3a3a4e; }
+        .article-item.completed { opacity: 0.6; border-left-color: var(--success); }
+        .article-item.completed .article-text { text-decoration: line-through; color: #999; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+
+        .article-content { display: flex; align-items: center; gap: 12px; flex: 1; }
+        .article-checkbox { width: 24px; height: 24px; cursor: pointer; }
+        .article-text { flex: 1; }
+        .article-category { display: inline-block; background: #e3f2fd; color: var(--primary); padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-right: 8px; }
+        .article-quantity { color: #999; font-size: 14px; margin-left: 10px; }
+        .article-actions { display: flex; gap: 8px; }
+        .btn-small { padding: 6px 12px; font-size: 14px; border-radius: 6px; background: #f0f0f0; color: #333; border: none; cursor: pointer; transition: all 0.3s; }
+        .btn-small:hover { background: #e0e0e0; }
+        .btn-small.delete { background: #ffebee; color: var(--danger); }
+        .btn-small.delete:hover { background: #ffcdd2; }
+
+        .message { padding: 12px 15px; border-radius: 8px; margin-bottom: 15px; display: none; animation: slideDown 0.3s ease; font-weight: 500; }
+        .error-message { background: #ffebee; color: #c62828; border-left: 4px solid var(--danger); }
+        .success-message { background: #e8f5e9; color: #2e7d32; border-left: 4px solid var(--success); }
+        .message.show { display: block; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .empty-state { text-align: center; color: #999; padding: 40px 20px; font-size: 16px; }
+        .export-import textarea { width: 100%; min-height: 100px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: monospace; font-size: 12px; margin-top: 10px; }
+        .history-item { background: white; padding: 12px; margin-bottom: 10px; border-radius: 8px; font-size: 14px; border-left: 3px solid #ddd; }
+        body.dark-mode .history-item { background: #3a3a4e; color: #aaa; }
+
+        @media (max-width: 600px) {
+            main { padding: 20px; }
+            .header h1 { font-size: 24px; }
+            .form-group { flex-direction: column; }
+            .form-group input, .form-group select { width: 100%; }
+            .article-item { flex-direction: column; align-items: flex-start; }
+            .article-actions { width: 100%; margin-top: 10px; }
+            .stats { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛒 Courses Optimisées</h1>
+            <button class="btn-icon" id="btnDarkMode" title="Mode sombre">🌙</button>
+        </div>
+
+        <main>
+            <div id="messages"></div>
+
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="accueil">🏠 Accueil</button>
+                <button class="tab-btn" data-tab="historique">📜 Historique</button>
+                <button class="tab-btn" data-tab="import-export">💾 Import/Export</button>
+            </div>
+
+            <!-- ONGLET ACCUEIL -->
+            <div id="accueil" class="tab-content active">
+                <div class="form-group">
+                    <input type="text" id="article" placeholder="Entrez un article..." autocomplete="off">
+                    <select id="categorie">
+                        <option value="">Catégorie</option>
+                        <option value="fruits">🍎 Fruits</option>
+                        <option value="legumes">🥬 Légumes</option>
+                        <option value="viandes">🥩 Viandes</option>
+                        <option value="produits-laitiers">🥛 Produits laitiers</option>
+                        <option value="boulangerie">🥖 Boulangerie</option>
+                        <option value="surgelés">❄️ Surgelés</option>
+                        <option value="boissons">🥤 Boissons</option>
+                        <option value="autres">📦 Autres</option>
+                    </select>
+                    <input type="number" id="quantite" placeholder="Quantité" min="1" value="1">
+                    <button id="btnAjouter">➕ Ajouter</button>
+                </div>
+
+                <div class="stats" id="stats"></div>
+
+                <div class="form-group">
+                    <input type="text" id="recherche" placeholder="🔍 Rechercher..." autocomplete="off">
+                    <select id="filtreCategorie">
+                        <option value="">Toutes catégories</option>
+                        <option value="fruits">🍎 Fruits</option>
+                        <option value="legumes">🥬 Légumes</option>
+                        <option value="viandes">🥩 Viandes</option>
+                        <option value="produits-laitiers">🥛 Produits laitiers</option>
+                        <option value="boulangerie">🥖 Boulangerie</option>
+                        <option value="surgelés">❄️ Surgelés</option>
+                        <option value="boissons">🥤 Boissons</option>
+                        <option value="autres">📦 Autres</option>
+                    </select>
+                    <select id="filtreEtat">
+                        <option value="">Tous</option>
+                        <option value="restants">À acheter</option>
+                        <option value="achetés">Achetés</option>
+                    </select>
+                    <button class="danger" id="btnViderListe">🗑️ Vider</button>
+                </div>
+
+                <div class="articles-container">
+                    <ul id="liste" role="list"></ul>
+                </div>
+            </div>
+
+            <!-- ONGLET HISTORIQUE -->
+            <div id="historique" class="tab-content">
+                <h2 style="margin-bottom: 15px;">📜 Historique</h2>
+                <div id="historiqueContainer"></div>
+                <button class="danger" id="btnEffacerHistorique" style="margin-top: 15px;">Effacer l'historique</button>
+            </div>
+
+            <!-- ONGLET IMPORT/EXPORT -->
+            <div id="import-export" class="tab-content">
+                <h2 style="margin-bottom: 15px;">💾 Import/Export</h2>
+                <div style="margin-bottom: 25px;">
+                    <h3 style="margin-bottom: 10px;">📤 Exporter</h3>
+                    <button id="btnExporter">Télécharger JSON</button>
+                    <textarea id="exportText" readonly></textarea>
+                </div>
+                <div>
+                    <h3 style="margin-bottom: 10px;">📥 Importer</h3>
+                    <textarea id="importText" placeholder="Collez votre JSON ici..."></textarea>
+                    <button id="btnImporter" style="margin-top: 10px;">Restaurer</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        'use strict';
+
+        // ========== CONFIG & CONSTANTS ==========
+        const CONFIG = {
+            STORAGE_KEY: 'shoppingList_v3',
+            HISTORY_KEY: 'history_v1',
+            THEME_KEY: 'theme',
+            MAX_LENGTH: 100,
+            MAX_ITEMS: 500,
+            MAX_HISTORY: 50,
+            MESSAGE_DURATION: 3000
+        };
+
+        // Map emoji pour catégories (source unique de vérité)
+        const EMOJI_MAP = {
+            fruits: '🍎',
+            legumes: '🥬',
+            viandes: '🥩',
+            'produits-laitiers': '🥛',
+            boulangerie: '🥖',
+            surgelés: '❄️',
+            boissons: '🥤',
+            autres: '📦'
+        };
+
+        const CATEGORY_LABELS = {
+            fruits: '🍎 Fruits',
+            legumes: '🥬 Légumes',
+            viandes: '🥩 Viandes',
+            'produits-laitiers': '🥛 Produits laitiers',
+            boulangerie: '🥖 Boulangerie',
+            surgelés: '❄️ Surgelés',
+            boissons: '🥤 Boissons',
+            autres: '📦 Autres'
+        };
+
+        // ========== DOM HELPERS (centralisation) ==========
+        const DOM = {
+            getId: (id) => document.getElementById(id),
+            getIds: (ids) => Object.fromEntries(ids.map(id => [id, DOM.getId(id)])),
+            query: (sel) => document.querySelector(sel),
+            queryAll: (sel) => document.querySelectorAll(sel),
+            createElement: (tag, attrs = {}, text = '') => {
+                const el = document.createElement(tag);
+                Object.assign(el, attrs);
+                if (text) el.textContent = text;
+                return el;
+            }
+        };
+
+        // Refs à jour couramment utilisées (cachées)
+        const cache = {
+            els: null,
+            init() {
+                this.els = {
+                    article: DOM.getId('article'),
+                    categorie: DOM.getId('categorie'),
+                    quantite: DOM.getId('quantite'),
+                    liste: DOM.getId('liste'),
+                    recherche: DOM.getId('recherche'),
+                    filtreCategorie: DOM.getId('filtreCategorie'),
+                    filtreEtat: DOM.getId('filtreEtat'),
+                    stats: DOM.getId('stats'),
+                    historiqueContainer: DOM.getId('historiqueContainer'),
+                    messages: DOM.getId('messages'),
+                    importText: DOM.getId('importText'),
+                    exportText: DOM.getId('exportText')
+                };
+            }
+        };
+
+        // ========== UTILITY FUNCTIONS ==========
+        /**
+         * Échappe HTML pour prévenir XSS
+         */
+        const escapeHTML = (text) => {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return String(text).replace(/[&<>"']/g, ch => map[ch]);
+        };
+
+        /**
+         * Valide article avec vérifications complètes
+         */
+        const validateArticle = (nom, list, quantite = 1) => {
+            // 1. Type & trim
+            const nomTrimmed = typeof nom === 'string' ? nom.trim() : '';
+            if (!nomTrimmed) return { ok: false, reason: 'Nom vide' };
+
+            // 2. Longueur
+            if (nomTrimmed.length > CONFIG.MAX_LENGTH) 
+                return { ok: false, reason: `Max ${CONFIG.MAX_LENGTH} caractères` };
+
+            // 3. Quantité entière positive
+            if (!Number.isInteger(quantite) || quantite <= 0)
+                return { ok: false, reason: 'Quantité doit être entière positive' };
+
+            // 4. Doublon (insensible casse)
+            const normalized = nomTrimmed.toLowerCase();
+            if (list.some(item => item.nom.toLowerCase() === normalized))
+                return { ok: false, reason: 'Article déjà présent' };
+
+            // 5. Capacité liste
+            if (list.length >= CONFIG.MAX_ITEMS)
+                return { ok: false, reason: `Max ${CONFIG.MAX_ITEMS} articles` };
+
+            return { ok: true, nom: nomTrimmed };
+        };
+
+        /**
+         * Calcul stats (memoïzable)
+         */
+        const calcStats = (liste) => {
+            const total = liste.length;
+            const achetes = liste.filter(i => i.achetee).length;
+            return {
+                total,
+                achetes,
+                restants: total - achetes,
+                percent: total === 0 ? 0 : Math.round((achetes / total) * 100)
+            };
+        };
+
+        // ========== STORAGE MANAGER (abstraction) ==========
+        const StorageManager = {
+            save(key, data) {
+                try {
+                    localStorage.setItem(key, JSON.stringify(data));
+                    return true;
+                } catch (e) {
+                    console.error('Storage error:', e);
+                    return false;
+                }
+            },
+
+            load(key, fallback = []) {
+                try {
+                    const data = localStorage.getItem(key);
+                    return data ? JSON.parse(data) : fallback;
+                } catch (e) {
+                    console.error('Load error:', e);
+                    return fallback;
+                }
+            },
+
+            remove(key) {
+                try { localStorage.removeItem(key); } catch (e) {}
+            },
+
+            toggle(key, val) {
+                localStorage.setItem(key, val ? 'true' : 'false');
+            },
+
+            getToggle(key, defaultVal = false) {
+                return localStorage.getItem(key) === 'true' ? !defaultVal : defaultVal;
+            }
+        };
+
+        // ========== RENDERER (vues) ==========
+        const Renderer = {
+            /**
+             * Rend stats (utilise calcStats)
+             */
+            renderStats(stats) {
+                const html = `
+                    <div class="stat-card">
+                        <div class="stat-number">${stats.total}</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${stats.achetes}</div>
+                        <div class="stat-label">Achetés</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${stats.restants}</div>
+                        <div class="stat-label">Restants</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${stats.percent}%</div>
+                        <div class="stat-label">Progression</div>
+                    </div>
+                `;
+                cache.els.stats.innerHTML = html;
+            },
+
+            /**
+             * Rend liste articles (avec filtres appliqués)
+             */
+            renderArticles(filteredList) {
+                const ul = cache.els.liste;
+                ul.innerHTML = '';
+
+                if (filteredList.length === 0) {
+                    const div = DOM.createElement('div', { className: 'empty-state' }, 'Aucun article 🔍');
+                    ul.appendChild(div);
+                    return;
+                }
+
+                const frag = document.createDocumentFragment();
+                filteredList.forEach(item => {
+                    const li = DOM.createElement('li', { className: `article-item ${item.achetee ? 'completed' : ''}`, role: 'listitem' });
+
+                    const content = DOM.createElement('div', { className: 'article-content' });
+                    const checkbox = DOM.createElement('input', { type: 'checkbox', className: 'article-checkbox', checked: item.achetee });
+                    const text = DOM.createElement('div', { className: 'article-text' });
+
+                    if (item.categorie) {
+                        const cat = DOM.createElement('span', { className: 'article-category' }, 
+                            `${EMOJI_MAP[item.categorie] || '📦'} ${CATEGORY_LABELS[item.categorie] || item.categorie}`);
+                        text.appendChild(cat);
+                    }
+
+                    const nom = DOM.createElement('strong', {}, escapeHTML(item.nom));
+                    text.appendChild(nom);
+
+                    if (item.quantite > 1) {
+                        const qty = DOM.createElement('span', { className: 'article-quantity' }, `×${item.quantite}`);
+                        text.appendChild(qty);
+                    }
+
+                    content.appendChild(checkbox);
+                    content.appendChild(text);
+
+                    const actions = DOM.createElement('div', { className: 'article-actions' });
+                    const btnEdit = DOM.createElement('button', { className: 'btn-small' }, '✏️ Éditer');
+                    const btnDel = DOM.createElement('button', { className: 'btn-small delete' }, '✕ Supprimer');
+                    actions.appendChild(btnEdit);
+                    actions.appendChild(btnDel);
+
+                    li.appendChild(content);
+                    li.appendChild(actions);
+
+                    // Event delegation indirecte (attachés sur chaque item mais optimisés)
+                    checkbox.dataset.id = item.id;
+                    btnEdit.dataset.id = item.id;
+                    btnDel.dataset.id = item.id;
+
+                    frag.appendChild(li);
+                });
+
+                ul.appendChild(frag);
+            },
+
+            /**
+             * Rend historique
+             */
+            renderHistory(hist) {
+                const container = cache.els.historiqueContainer;
+                if (hist.length === 0) {
+                    container.innerHTML = '<div class="empty-state">Aucun historique</div>';
+                    return;
+                }
+
+                const frag = document.createDocumentFragment();
+                hist.forEach(item => {
+                    const div = DOM.createElement('div', { className: 'history-item' });
+                    const txt = `<strong>${escapeHTML(item.nom)}</strong> ${item.categorie ? `(${CATEGORY_LABELS[item.categorie] || item.categorie})` : ''} - Qty: ${item.quantite} <br><small>${item.date}</small>`;
+                    div.innerHTML = txt; // safe car échappé
+                    frag.appendChild(div);
+                });
+                container.innerHTML = '';
+                container.appendChild(frag);
+            }
+        };
+
+        // ========== UI CONTROLLER (logique) ==========
+        const UIController = {
+            liste: [],
+            historique: [],
+
+            init() {
+                cache.init();
+                this.liste = StorageManager.load(CONFIG.STORAGE_KEY, []);
+                this.historique = StorageManager.load(CONFIG.HISTORY_KEY, []);
+                this.setupTheme();
+                this.attachEvents();
+                this.render();
+            },
+
+            attachEvents() {
+                // Ajout article (Entrée + bouton)
+                const addHandler = () => this.handleAddArticle();
+                cache.els.article.addEventListener('keypress', (e) => e.key === 'Enter' && addHandler());
+                DOM.getId('btnAjouter').addEventListener('click', addHandler);
+
+                // Filtres & recherche
+                [cache.els.recherche, cache.els.filtreCategorie, cache.els.filtreEtat].forEach(el => 
+                    el.addEventListener('input', () => this.render()));
+                [cache.els.recherche, cache.els.filtreCategorie, cache.els.filtreEtat].forEach(el => 
+                    el.addEventListener('change', () => this.render()));
+
+                // Actions
+                DOM.getId('btnViderListe').addEventListener('click', () => this.handleClearList());
+                DOM.getId('btnEffacerHistorique').addEventListener('click', () => this.handleClearHistory());
+                DOM.getId('btnExporter').addEventListener('click', () => this.handleExport());
+                DOM.getId('btnImporter').addEventListener('click', () => this.handleImport());
+                DOM.getId('btnDarkMode').addEventListener('click', () => this.toggleTheme());
+
+                // Onglets
+                DOM.queryAll('.tab-btn').forEach(btn => 
+                    btn.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab)));
+
+                // Event delegation pour articles
+                cache.els.liste.addEventListener('change', (e) => {
+                    if (e.target.classList.contains('article-checkbox')) {
+                        const id = parseInt(e.target.dataset.id);
+                        this.handleToggleBought(id);
+                    }
+                });
+
+                cache.els.liste.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.dataset.id);
+                    if (e.target.classList.contains('btn-small')) {
+                        if (e.target.classList.contains('delete')) {
+                            this.handleDeleteArticle(id);
+                        } else {
+                            this.handleEditArticle(id);
+                        }
+                    }
+                });
+            },
+
+            handleAddArticle() {
+                const nom = cache.els.article.value;
+                const categorie = cache.els.categorie.value;
+                const quantite = parseInt(cache.els.quantite.value) || 1;
+
+                const validation = validateArticle(nom, this.liste, quantite);
+                if (!validation.ok) {
+                    this.showMessage(validation.reason, 'error');
+                    cache.els.article.focus();
+                    return;
+                }
+
+                const article = {
+                    id: Date.now(),
+                    nom: validation.nom,
+                    categorie,
+                    quantite,
+                    achetee: false
+                };
+
+                this.liste.push(article);
+                this.historique.unshift({ nom: validation.nom, categorie, quantite, date: new Date().toLocaleString('fr-FR') });
+                this.historique.splice(CONFIG.MAX_HISTORY);
+
+                this.save();
+                this.reset();
+                this.showMessage(`"${validation.nom}" ajouté ✓`, 'success');
+            },
+
+            handleDeleteArticle(id) {
+                this.liste = this.liste.filter(i => i.id !== id);
+                this.save();
+                this.showMessage('Article supprimé', 'success');
+            },
+
+            handleToggleBought(id) {
+                const item = this.liste.find(i => i.id === id);
+                if (item) {
+                    item.achetee = !item.achetee;
+                    this.save();
+                }
+            },
+
+            handleEditArticle(id) {
+                const item = this.liste.find(i => i.id === id);
+                if (!item) return;
+
+                const newName = prompt('Modifier l\'article:', item.nom);
+                if (newName && newName.trim()) {
+                    const validation = validateArticle(newName, this.liste.filter(i => i.id !== id), item.quantite);
+                    if (validation.ok) {
+                        item.nom = validation.nom;
+                        this.save();
+                        this.showMessage('Article modifié', 'success');
+                    } else {
+                        this.showMessage(validation.reason, 'error');
+                    }
+                }
+            },
+
+            handleClearList() {
+                if (confirm('Vider la liste?')) {
+                    this.liste = [];
+                    this.save();
+                    this.showMessage('Liste vidée', 'success');
+                }
+            },
+
+            handleClearHistory() {
+                if (confirm('Effacer l\'historique?')) {
+                    this.historique = [];
+                    StorageManager.save(CONFIG.HISTORY_KEY, this.historique);
+                    this.showMessage('Historique effacé', 'success');
+                    this.render();
+                }
+            },
+
+            handleExport() {
+                const data = { liste: this.liste, historique: this.historique, dateExport: new Date().toISOString() };
+                const json = JSON.stringify(data, null, 2);
+                cache.els.exportText.value = json;
+
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `courses_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                this.showMessage('Exporté ✓', 'success');
+            },
+
+            handleImport() {
+                const text = cache.els.importText.value.trim();
+                if (!text) {
+                    this.showMessage('Collez du JSON', 'error');
+                    return;
+                }
+
+                try {
+                    const data = JSON.parse(text);
+                    if (!Array.isArray(data.liste)) throw new Error('Structure invalide');
+
+                    // Sanitize
+                    this.liste = data.liste.filter(i => 
+                        i && typeof i.nom === 'string' && i.nom.trim() && 
+                        Number.isInteger(i.quantite) && i.quantite > 0
+                    ).slice(0, CONFIG.MAX_ITEMS);
+
+                    this.save();
+                    cache.els.importText.value = '';
+                    this.showMessage('Importé ✓', 'success');
+                    this.render();
+                } catch (e) {
+                    this.showMessage('JSON invalide: ' + e.message, 'error');
+                }
+            },
+
+            switchTab(tab) {
+                DOM.queryAll('.tab-content').forEach(t => t.classList.remove('active'));
+                DOM.queryAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                DOM.getId(tab).classList.add('active');
+                DOM.query(`[data-tab="${tab}"]`).classList.add('active');
+
+                if (tab === 'historique') Renderer.renderHistory(this.historique);
+            },
+
+            toggleTheme() {
+                const isDark = document.body.classList.toggle('dark-mode');
+                StorageManager.toggle(CONFIG.THEME_KEY, isDark);
+            },
+
+            setupTheme() {
+                const isDark = StorageManager.getToggle(CONFIG.THEME_KEY, false);
+                if (isDark) document.body.classList.add('dark-mode');
+            },
+
+            showMessage(text, type = 'error') {
+                const container = cache.els.messages;
+                const msg = DOM.createElement('div', { className: `message ${type}-message show` }, text);
+                container.innerHTML = '';
+                container.appendChild(msg);
+                setTimeout(() => msg.classList.remove('show'), CONFIG.MESSAGE_DURATION);
+            },
+
+            render() {
+                const search = cache.els.recherche.value.toLowerCase();
+                const catFilter = cache.els.filtreCategorie.value;
+                const stateFilter = cache.els.filtreEtat.value;
+
+                const filtered = this.liste.filter(item => 
+                    item.nom.toLowerCase().includes(search) &&
+                    (!catFilter || item.categorie === catFilter) &&
+                    (!stateFilter || (stateFilter === 'achetés' && item.achetee) || (stateFilter === 'restants' && !item.achetee))
+                );
+
+                Renderer.renderArticles(filtered);
+                Renderer.renderStats(calcStats(this.liste));
+            },
+
+            save() {
+                StorageManager.save(CONFIG.STORAGE_KEY, this.liste);
+                StorageManager.save(CONFIG.HISTORY_KEY, this.historique);
+                this.render();
+            },
+
+            reset() {
+                cache.els.article.value = '';
+                cache.els.categorie.value = '';
+                cache.els.quantite.value = '1';
+                cache.els.article.focus();
+            }
+        };
+
+        // ========== INIT ==========
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => UIController.init());
+        } else {
+            UIController.init();
+        }
+    </script>
+</body>
+</html>
