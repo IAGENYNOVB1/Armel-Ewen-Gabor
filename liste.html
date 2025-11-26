@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="description" content="Application avancée de gestion de liste de courses">
+    <meta name="theme-color" content="#667eea">
+    <title>Liste de courses</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #4CAF50;
+            --danger: #ff6b6b;
+            --warning: #ffc107;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --text: #333;
+        }
+
+        body.dark-mode {
+            --primary: #7c8ff7;
+            --secondary: #9d6bb8;
+            --dark: #0f0f1e;
+            --light: #2a2a3e;
+            --text: #e0e0e0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text);
+            transition: background 0.3s ease;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: none;
+            background: white;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        }
+
+        main {
+            background: var(--light);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            margin-bottom: 20px;
+            transition: background 0.3s ease;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e0e0e0;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-btn:hover {
+            color: var(--text);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group input[type="text"] {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .form-group input[type="number"] {
+            width: 100px;
+        }
+
+        .form-group select {
+            width: 130px;
+        }
+
+        button {
+            padding: 12px 25px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.danger {
+            background: var(--danger);
+        }
+
+        button.danger:hover {
+            background: #ee5a52;
+        }
+
+        .articles-container {
+            margin-bottom: 25px;
+        }
+
+        .articles-container ul {
+            list-style: none;
+        }
+
+        .article-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--primary);
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+        }
+
+        body.dark-mode .article-item {
+            background: #3a3a4e;
+        }
+
+        .article-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .article-item.completed {
+            opacity: 0.6;
+            border-left-color: var(--success);
+        }
+
+        .article-item.completed .article-text {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .article-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .article-checkbox {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+        }
+
+        .article-text {
+            flex: 1;
+        }
+
+        .article-category {
+            display: inline-block;
+            background: #e3f2fd;
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .article-quantity {
+            color: #999;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .article-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 14px;
+            border-radius: 6px;
+            background: #f0f0f0;
+            color: #333;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-small:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-small.delete {
+            background: #ffebee;
+            color: var(--danger);
+        }
+
+        .btn-small.delete:hover {
+            background: #ffcdd2;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        body.dark-mode .stat-card {
+            background: #3a3a4e;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+            font-size: 16px;
+        }
+
+        .error-message,
+        .success-message {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+            animation: slideDown 0.3s ease;
+            font-weight: 500;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid var(--danger);
+        }
+
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid var(--success);
+        }
+
+        .error-message.show,
+        .success-message.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .export-import {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .export-import textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .history-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #666;
+            border-left: 3px solid #ddd;
+        }
+
+        body.dark-mode .history-item {
+            background: #3a3a4e;
+            color: #aaa;
+        }
+
+        @media (max-width: 600px) {
+            main {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .form-group {
+                flex-direction: column;
+            }
+
+            .form-group input[type="text"],
+            .form-group input[type="number"],
+            .form-group select {
+                width: 100%;
+            }
+
+            .article-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .article-actions {
+                width: 100%;
+                margin-top: 10px;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛒 Courses Premium</h1>
+            <div class="controls">
+                <button class="btn-icon" id="btnDarkMode" title="Mode sombre" aria-label="Basculer le mode sombre">
+                    🌙
+                </button>
+            </div>
+        </div>
+
+        <main>
+            <div id="successMessage" class="success-message" role="alert"></div>
+            <div id="errorMessage" class="error-message" role="alert"></div>
+
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="accueil">🏠 Accueil</button>
+                <button class="tab-btn" data-tab="historique">📜 Historique</button>
+                <button class="tab-btn" data-tab="import-export">💾 Import/Export</button>
+            </div>
+
+            <!-- ONGLET ACCUEIL -->
+            <div id="accueil" class="tab-content active">
+                <div class="form-group">
+                    <input 
+                        type="text" 
+                        id="article" 
+                        placeholder="Entrez un article..." 
+                        autocomplete="off"
+                    >
+                    <select id="categorie">
+                        <option value="">Catégorie</option>
+                        <option value="fruits">🍎 Fruits</option>
+                        <option value="legumes">🥬 Légumes</option>
+                        <option value="viandes">🥩 Viandes</option>
+                        <option value="produits-laitiers">🥛 Produits laitiers</option>
+                        <option value="boulangerie">🥖 Boulangerie</option>
+                        <option value="surgelés">❄️ Surgelés</option>
+                        <option value="boissons">🥤 Boissons</option>
+                        <option value="autres">📦 Autres</option>
+                    </select>
+                    <input 
+                        type="number" 
+                        id="quantite" 
+                        placeholder="Quantité" 
+                        min="1" 
+                        value="1"
+                    >
+                    <button id="btnAjouter">➕ Ajouter</button>
+                </div>
+
+                <!-- STATISTIQUES -->
+                <div class="stats" id="statsContainer">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalArticles">0</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="articlesAchetés">0</div>
+                        <div class="stat-label">Achetés</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="articlesRestants">0</div>
+                        <div class="stat-label">Restants</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="pourcentageAchat">0%</div>
+                        <div class="stat-label">Progression</div>
+                    </div>
+                </div>
+
+                <!-- FILTRES -->
+                <div class="form-group">
+                    <input 
+                        type="text" 
+                        id="recherche" 
+                        placeholder="🔍 Rechercher un article..."
+                        autocomplete="off"
+                    >
+                    <select id="filtreCategorie">
+                        <option value="">Toutes les catégories</option>
+                        <option value="fruits">🍎 Fruits</option>
+                        <option value="legumes">🥬 Légumes</option>
+                        <option value="viandes">🥩 Viandes</option>
+                        <option value="produits-laitiers">🥛 Produits laitiers</option>
+                        <option value="boulangerie">🥖 Boulangerie</option>
+                        <option value="surgelés">❄️ Surgelés</option>
+                        <option value="boissons">🥤 Boissons</option>
+                        <option value="autres">📦 Autres</option>
+                    </select>
+                    <select id="filtreEtat">
+                        <option value="">Tous</option>
+                        <option value="restants">À acheter</option>
+                        <option value="achetés">Achetés</option>
+                    </select>
+                    <button class="danger" id="btnViderListe">🗑️ Vider la liste</button>
+                </div>
+
+                <!-- LISTE DES ARTICLES -->
+                <div class="articles-container">
+                    <ul id="liste" role="list">
+                        <div class="empty-state">Aucun article. Commencez à ajouter ! 🎯</div>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ONGLET HISTORIQUE -->
+            <div id="historique" class="tab-content">
+                <h2 style="margin-bottom: 15px;">📜 Historique des articles</h2>
+                <div id="historiqueContainer">
+                    <div class="empty-state">Aucun historique pour le moment</div>
+                </div>
+                <button class="danger" id="btnEffacerHistorique" style="margin-top: 15px;">Effacer l'historique</button>
+            </div>
+
+            <!-- ONGLET IMPORT/EXPORT -->
+            <div id="import-export" class="tab-content">
+                <h2 style="margin-bottom: 15px;">💾 Sauvegarde et restauration</h2>
+                
+                <div style="margin-bottom: 25px;">
+                    <h3 style="margin-bottom: 10px;">📤 Exporter les données</h3>
+                    <button id="btnExporter">Télécharger en JSON</button>
+                    <textarea id="exportText" readonly></textarea>
+                </div>
+
+                <div>
+                    <h3 style="margin-bottom: 10px;">📥 Importer des données</h3>
+                    <textarea id="importText" placeholder="Collez votre JSON ici..."></textarea>
+                    <button id="btnImporter" style="margin-top: 10px;">Restaurer depuis JSON</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        'use strict';
+
+        const CONFIG = {
+            STORAGE_KEY: 'shoppingList_v2',
+            HISTORY_KEY: 'shoppingHistory_v1',
+            MAX_ITEM_LENGTH: 100,
+            MAX_ITEMS: 500,
+            THEME_KEY: 'theme_preference'
+        };
+
+        const CATEGORIES = {
+            fruits: '🍎 Fruits',
+            legumes: '🥬 Légumes',
+            viandes: '🥩 Viandes',
+            'produits-laitiers': '🥛 Produits laitiers',
+            boulangerie: '🥖 Boulangerie',
+            surgelés: '❄️ Surgelés',
+            boissons: '🥤 Boissons',
+            autres: '📦 Autres'
+        };
+
+        const app = {
+            liste: [],
+            historique: [],
+            
+            init() {
+                this.chargerDepuisStorage();
+                this.chargerHistorique();
+                this.chargerTheme();
+                this.attacherEvenements();
+                this.afficherListe();
+                this.mettreAJourStats();
+            },
+
+            attacherEvenements() {
+                // Ajout d'article
+                document.getElementById('btnAjouter').addEventListener('click', () => this.ajouterArticle());
+                document.getElementById('article').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.ajouterArticle();
+                });
+
+                // Recherche et filtres
+                document.getElementById('recherche').addEventListener('input', () => this.afficherListe());
+                document.getElementById('filtreCategorie').addEventListener('change', () => this.afficherListe());
+                document.getElementById('filtreEtat').addEventListener('change', () => this.afficherListe());
+
+                // Actions
+                document.getElementById('btnViderListe').addEventListener('click', () => this.viderListe());
+                document.getElementById('btnEffacerHistorique').addEventListener('click', () => this.effacerHistorique());
+
+                // Import/Export
+                document.getElementById('btnExporter').addEventListener('click', () => this.exporterDonnees());
+                document.getElementById('btnImporter').addEventListener('click', () => this.importerDonnees());
+
+                // Thème sombre
+                document.getElementById('btnDarkMode').addEventListener('click', () => this.basculerTheme());
+
+                // Onglets
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => this.changerOnglet(e.target.dataset.tab));
+                });
+
+                // Masquer erreur à la saisie
+                document.getElementById('article').addEventListener('input', () => this.masquerErreur());
+            },
+
+            validerArticle(article) {
+                if (!article || typeof article !== 'string') {
+                    this.afficherErreur('Article invalide');
+                    return false;
+                }
+
+                const sanitized = article.trim();
+
+                if (sanitized === '') {
+                    this.afficherErreur('Veuillez entrer un article');
+                    return false;
+                }
+
+                if (sanitized.length > CONFIG.MAX_ITEM_LENGTH) {
+                    this.afficherErreur(`Max ${CONFIG.MAX_ITEM_LENGTH} caractères`);
+                    return false;
+                }
+
+                if (this.liste.length >= CONFIG.MAX_ITEMS) {
+                    this.afficherErreur(`Max ${CONFIG.MAX_ITEMS} articles`);
+                    return false;
+                }
+
+                return true;
+            },
+
+            ajouterArticle() {
+                const input = document.getElementById('article');
+                const categorie = document.getElementById('categorie').value || '';
+                const quantite = parseInt(document.getElementById('quantite').value) || 1;
+                const article = input.value.trim();
+
+                if (!this.validerArticle(article)) {
+                    input.focus();
+                    return;
+                }
+
+                const nouvelArticle = {
+                    id: Date.now(),
+                    nom: article,
+                    categorie: categorie,
+                    quantite: quantite,
+                    achetee: false,
+                    dateAjout: new Date().toISOString()
+                };
+
+                this.liste.push(nouvelArticle);
+                this.ajouterAuHistorique(article, categorie, quantite);
+                this.sauvegarderDansStorage();
+                this.afficherListe();
+                this.mettreAJourStats();
+                this.afficherSucces(`"${article}" ajouté ✓`);
+                
+                input.value = '';
+                document.getElementById('categorie').value = '';
+                document.getElementById('quantite').value = '1';
+                input.focus();
+            },
+
+            supprimerArticle(id) {
+                this.liste = this.liste.filter(item => item.id !== id);
+                this.sauvegarderDansStorage();
+                this.afficherListe();
+                this.mettreAJourStats();
+                this.afficherSucces('Article supprimé');
+            },
+
+            basculerAchat(id) {
+                const article = this.liste.find(item => item.id === id);
+                if (article) {
+                    article.achetee = !article.achetee;
+                    this.sauvegarderDansStorage();
+                    this.afficherListe();
+                    this.mettreAJourStats();
+                }
+            },
+
+            editerArticle(id) {
+                const article = this.liste.find(item => item.id === id);
+                if (article) {
+                    const nouveauNom = prompt('Modifier l\'article:', article.nom);
+                    if (nouveauNom && nouveauNom.trim()) {
+                        article.nom = nouveauNom.trim();
+                        this.sauvegarderDansStorage();
+                        this.afficherListe();
+                        this.afficherSucces('Article modifié');
+                    }
+                }
+            },
+
+            afficherListe() {
+                const ul = document.getElementById('liste');
+                const recherche = document.getElementById('recherche').value.toLowerCase();
+                const filtreCategorie = document.getElementById('filtreCategorie').value;
+                const filtreEtat = document.getElementById('filtreEtat').value;
+
+                let articles = this.liste.filter(item => {
+                    const matchRecherche = item.nom.toLowerCase().includes(recherche);
+                    const matchCategorie = !filtreCategorie || item.categorie === filtreCategorie;
+                    const matchEtat = !filtreEtat || 
+                        (filtreEtat === 'achetés' && item.achetee) ||
+                        (filtreEtat === 'restants' && !item.achetee);
+                    
+                    return matchRecherche && matchCategorie && matchEtat;
+                });
+
+                ul.innerHTML = '';
+
+                if (articles.length === 0) {
+                    ul.innerHTML = '<div class="empty-state">Aucun article correspondant 🔍</div>';
+                    return;
+                }
+
+                const fragment = document.createDocumentFragment();
+
+                articles.forEach((item) => {
+                    const li = document.createElement('li');
+                    li.className = `article-item ${item.achetee ? 'completed' : ''}`;
+                    li.role = 'listitem';
+
+                    const emoji = {
+                        fruits: '🍎',
+                        legumes: '🥬',
+                        viandes: '🥩',
+                        'produits-laitiers': '🥛',
+                        boulangerie: '🥖',
+                        surgelés: '❄️',
+                        boissons: '🥤',
+                        autres: '📦'
+                    }[item.categorie] || '📦';
+
+                    li.innerHTML = `
+                        <div class="article-content">
+                            <input type="checkbox" class="article-checkbox" ${item.achetee ? 'checked' : ''}>
+                            <div class="article-text">
+                                ${item.categorie ? `<span class="article-category">${emoji} ${CATEGORIES[item.categorie] || item.categorie}</span>` : ''}
+                                <strong>${this.echapperHTML(item.nom)}</strong>
+                                <span class="article-quantity">×${item.quantite}</span>
+                            </div>
+                        </div>
+                        <div class="article-actions">
+                            <button class="btn-small">✏️ Éditer</button>
+                            <button class="btn-small delete">✕ Supprimer</button>
+                        </div>
+                    `;
+
+                    const checkbox = li.querySelector('.article-checkbox');
+                    checkbox.addEventListener('change', () => this.basculerAchat(item.id));
+
+                    const btnEditer = li.querySelector('button:first-of-type');
+                    btnEditer.addEventListener('click', () => this.editerArticle(item.id));
+
+                    const btnSupprimer = li.querySelector('button.delete');
+                    btnSupprimer.addEventListener('click', () => this.supprimerArticle(item.id));
+
+                    fragment.appendChild(li);
+                });
+
+                ul.appendChild(fragment);
+            },
+
+            mettreAJourStats() {
+                const total = this.liste.length;
+                const achetés = this.liste.filter(item => item.achetee).length;
+                const restants = total - achetés;
+                const pourcentage = total === 0 ? 0 : Math.round((achetés / total) * 100);
+
+                document.getElementById('totalArticles').textContent = total;
+                document.getElementById('articlesAchetés').textContent = achetés;
+                document.getElementById('articlesRestants').textContent = restants;
+                document.getElementById('pourcentageAchat').textContent = pourcentage + '%';
+            },
+
+            viderListe() {
+                if (this.liste.length === 0) {
+                    this.afficherErreur('La liste est déjà vide');
+                    return;
+                }
+                if (confirm('Êtes-vous sûr de vouloir vider la liste ?')) {
+                    this.liste = [];
+                    this.sauvegarderDansStorage();
+                    this.afficherListe();
+                    this.mettreAJourStats();
+                    this.afficherSucces('Liste vidée');
+                }
+            },
+
+            ajouterAuHistorique(nom, categorie, quantite) {
+                this.historique.unshift({
+                    nom: nom,
+                    categorie: categorie,
+                    quantite: quantite,
+                    date: new Date().toLocaleString('fr-FR')
+                });
+                this.historique = this.historique.slice(0, 50);
+                this.sauvegarderHistorique();
+                this.afficherHistorique();
+            },
+
+            afficherHistorique() {
+                const container = document.getElementById('historiqueContainer');
+                if (this.historique.length === 0) {
+                    container.innerHTML = '<div class="empty-state">Aucun historique</div>';
+                    return;
+                }
+
+                let html = this.historique.map(item => `
+                    <div class="history-item">
+                        <strong>${this.echapperHTML(item.nom)}</strong>
+                        ${item.categorie ? ` (${CATEGORIES[item.categorie] || item.categorie})` : ''}
+                        - Qty: ${item.quantite}
+                        <br><small>${item.date}</small>
+                    </div>
+                `).join('');
+
+                container.innerHTML = html;
+            },
+
+            effacerHistorique() {
+                if (this.historique.length === 0) {
+                    this.afficherErreur('Historique déjà vide');
+                    return;
+                }
+                if (confirm('Êtes-vous sûr de vouloir effacer tout l\'historique ?')) {
+                    this.historique = [];
+                    this.sauvegarderHistorique();
+                    this.afficherHistorique();
+                    this.afficherSucces('Historique effacé');
+                }
+            },
+
+            exporterDonnees() {
+                const donnees = {
+                    liste: this.liste,
+                    historique: this.historique,
+                    dateExport: new Date().toISOString()
+                };
+                const json = JSON.stringify(donnees, null, 2);
+                document.getElementById('exportText').value = json;
+                this.afficherSucces('Données exportées en JSON');
+
+                // Télécharger le fichier
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `courses_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            },
+
+            importerDonnees() {
+                const text = document.getElementById('importText').value.trim();
+                if (!text) {
+                    this.afficherErreur('Veuillez coller du JSON');
+                    return;
+                }
+
+                try {
+                    const donnees = JSON.parse(text);
+                    if (Array.isArray(donnees.liste)) {
+                        this.liste = donnees.liste;
+                        this.sauvegarderDansStorage();
+                        this.afficherListe();
+                        this.mettreAJourStats();
+                        this.afficherSucces('Données restaurées avec succès');
+                        document.getElementById('importText').value = '';
+                    } else {
+                        this.afficherErreur('Format JSON invalide');
+                    }
+                } catch (e) {
+                    this.afficherErreur('Erreur de parsing JSON: ' + e.message);
+                }
+            },
+
+            changerOnglet(tabName) {
+                document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                
+                document.getElementById(tabName).classList.add('active');
+                document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+                if (tabName === 'historique') {
+                    this.afficherHistorique();
+                }
+            },
+
+            basculerTheme() {
+                const isDark = document.body.classList.toggle('dark-mode');
+                localStorage.setItem(CONFIG.THEME_KEY, isDark ? 'dark' : 'light');
+            },
+
+            chargerTheme() {
+                const theme = localStorage.getItem(CONFIG.THEME_KEY) || 'light';
+                if (theme === 'dark') {
+                    document.body.classList.add('dark-mode');
+                }
+            },
+
+            echapperHTML(text) {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return text.replace(/[&<>"']/g, (char) => map[char]);
+            },
+
+            afficherErreur(message) {
+                const errorDiv = document.getElementById('errorMessage');
+                errorDiv.textContent = message;
+                errorDiv.classList.add('show');
+                setTimeout(() => errorDiv.classList.remove('show'), 4000);
+            },
+
+            afficherSucces(message) {
+                const successDiv = document.getElementById('successMessage');
+                successDiv.textContent = message;
+                successDiv.classList.add('show');
+                setTimeout(() => successDiv.classList.remove('show'), 3000);
+            },
+
+            masquerErreur() {
+                document.getElementById('errorMessage').classList.remove('show');
+            },
+
+            sauvegarderDansStorage() {
+                try {
+                    localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(this.liste));
+                } catch (e) {
+                    console.error('Erreur sauvegarde:', e);
+                    this.afficherErreur('Erreur de sauvegarde');
+                }
+            },
+
+            chargerDepuisStorage() {
+                try {
+                    const data = localStorage.getItem(CONFIG.STORAGE_KEY);
+                    if (data) {
+                        const parsed = JSON.parse(data);
+                        if (Array.isArray(parsed)) {
+                            this.liste = parsed.filter(item => 
+                                item && typeof item === 'object' && item.nom
+                            ).slice(0, CONFIG.MAX_ITEMS);
+                        }
+                    }
+                } catch (e) {
+                    console.error('Erreur chargement:', e);
+                    this.liste = [];
+                }
+            },
+
+            sauvegarderHistorique() {
+                try {
+                    localStorage.setItem(CONFIG.HISTORY_KEY, JSON.stringify(this.historique));
+                } catch (e) {
+                    console.error('Erreur sauvegarde historique:', e);
+                }
+            },
+
+            chargerHistorique() {
+                try {
+                    const data = localStorage.getItem(CONFIG.HISTORY_KEY);
+                    if (data) {
+                        this.historique = JSON.parse(data).slice(0, 50);
+                    }
+                } catch (e) {
+                    console.error('Erreur chargement historique:', e);
+                    this.historique = [];
+                }
+            }
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => app.init());
+        } else {
+            app.init();
+        }
+    </script>
+</body>
+</html>
