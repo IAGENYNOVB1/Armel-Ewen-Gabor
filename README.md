@@ -149,6 +149,8 @@ Séparation CSS/JS dans des fichiers externes.
 
 Support multi-utilisateur avec backend (API REST ou Firebase).
 
+.La version optimisée comporte 40 pourcents de code en moins.
+
 Licence
 
 Ce projet est libre de droits et peut être utilisé ou modifié à volonté.
